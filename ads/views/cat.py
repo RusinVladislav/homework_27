@@ -2,19 +2,29 @@ import json
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView, CreateView, DeleteView, UpdateView
 
-from ads.models import Categorie
+from ads.models import Category
 
 
 def root(request):
     return JsonResponse({"status": "ok"}, status=200)
 
 
-class CategorieDetailView(DetailView):
-    model = Categorie
+class CategoryListView(ListView):
+    model = Category
+    queryset = Category.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        self.object_list = self.object_list.order_by('name')
+        return JsonResponse(data=[{"id": category.pk, "name": category.name} for category in self.object_list],
+                            safe=False)
+
+
+class CategoryDetailView(DetailView):
+    model = Category
 
     def get(self, request, *args, **kwargs):
         category = self.get_object()
@@ -22,16 +32,37 @@ class CategorieDetailView(DetailView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CategorieListCreateView(View):
-    def get(self, request):
-        cat_list = Categorie.objects.all()
-        return JsonResponse([{"id": cat.pk,
-                              "name": cat.name
-                              } for cat in cat_list], safe=False)
+class CategoryCreatelView(CreateView):
+    model = Category
+    fields = "__all__"
 
-    def post(self, request):
-        ad_data = json.loads(request.body)
-        new_cat = Categorie.objects.create(**ad_data)
-        return JsonResponse({"id": new_cat.pk,
-                             "name": new_cat.name
-                             })
+    def post(self, request, *args, **kwargs):
+        category_data = json.loads(request.body)
+        new_category = Category.objects.create(**category_data)
+        return JsonResponse({"id": new_category.pk, "name": new_category.name})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryUpdatelView(UpdateView):
+    model = Category
+    fields = "__all__"
+
+    def patch(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        category_data = json.loads(request.body)
+        self.object.name = category_data["name"]
+        self.object.save()
+
+        return JsonResponse({"id": self.object.pk, "name": self.object.name})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryDeletelView(DeleteView):
+    model = Category
+    success_url = "/"
+
+    def patch(self, request, *args, **kwargs):
+        cat_pk = self.get_object().pk
+        super().delete(request, *args, **kwargs)
+
+        return JsonResponse({"id": cat_pk})
