@@ -23,7 +23,7 @@ class UserRoles(models.TextChoices):
 
 class User(models.Model):
     first_name = models.CharField(max_length=200, null=True)
-    last_name = models.CharField(max_length=200, null=True)
+    last_name = models.CharField(max_length=200, null=True, blank=True)
     username = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
     role = models.CharField(max_length=9, choices=UserRoles.choices)
