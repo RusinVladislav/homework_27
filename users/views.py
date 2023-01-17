@@ -10,7 +10,7 @@ class UserDetailView(RetrieveAPIView):
 
 
 class UserListView(ListAPIView):
-    queryset = User.objects.annotate(total_ads=Count("ads", filter=Q(ads_is_published=True))).order_by("username")
+    queryset = User.objects.annotate(total_ads=Count("ads", filter=Q(ads__is_published=True))).order_by("username")
     serializer_class = UserListSerializer
 
 

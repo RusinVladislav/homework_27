@@ -2,7 +2,10 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
+
+from ads.permissions import IsAdOwnerOrStaff
 from ads.serializers import *
 from ads.models import Ad
 
@@ -18,6 +21,17 @@ class AdViewSet(ModelViewSet):
         "list": AdListSerializer,
         "retrieve": AdDetailSerializer
     }
+
+    default_permission = [AllowAny()]
+    permissions = {
+        "retrieve": [IsAuthenticated()],
+        "update": [IsAuthenticated(), IsAdOwnerOrStaff()],
+        "partial_update": [IsAuthenticated(), IsAdOwnerOrStaff()],
+        "destroy": [IsAuthenticated(), IsAdOwnerOrStaff()],
+    }
+
+    def get_permissions(self):
+        return self.permissions.get(self.action, self.default_permission)
 
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer)
