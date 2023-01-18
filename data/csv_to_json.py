@@ -8,7 +8,7 @@ NAME_FILES_USERS_CSV = ['location.csv', 'user.csv']
 AMOUNT_FILES = len(NAME_FILES_ADS_CSV)
 
 # передаем название нашего "app" для подстановки его в начало названия модели
-NAME_APP_ADS = 'ads.'
+NAME_APP_ADS = 'ad.'
 NAME_APP_USER = 'users.'
 
 # создаем файлы с раcширением "json"
